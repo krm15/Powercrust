@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
   infile >> m_NumberOfPoints;
 
-  double p[3];
+  float p[3];
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   for( unsigned int i = 0; i <  m_NumberOfPoints; i++ )
   {
@@ -33,16 +33,16 @@ int main(int argc, char *argv[])
     std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << std::endl;
   }
 
-  vtkSmartPointer<vtkPolyData> dataSet = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkUnstructuredGrid> dataSet = vtkSmartPointer<vtkUnstructuredGrid>::New();
   dataSet->SetPoints( points );
 
   vtkSmartPointer<vtkPowerCrustSurfaceReconstruction> reconstruct =
     vtkSmartPointer<vtkPowerCrustSurfaceReconstruction>::New();
-  reconstruct->SetInputData( dataSet );
+  reconstruct->SetInput( dataSet );
   reconstruct->Update();
 
   vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
-  writer->SetInputData( reconstruct->GetMedialSurface() );
+  writer->SetInput( reconstruct->GetMedialSurface() );
   writer->SetFileName( argv[2] );
   writer->Write();
 

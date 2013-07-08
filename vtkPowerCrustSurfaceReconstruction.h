@@ -59,18 +59,17 @@
 #ifndef __vtkPowerCrustSurfaceReconstruction_h
 #define __vtkPowerCrustSurfaceReconstruction_h
 
-#include "vtkPolyDataAlgorithm.h"
+#include "vtkDataSetToPolyDataFilter.h"
 #include "vtkPolyData.h"
 #include "vtkCellArray.h"
 #include "vtkPointData.h"
 
-class vtkPowerCrustSurfaceReconstruction : public vtkPolyDataAlgorithm
+class VTK_GRAPHICS_EXPORT vtkPowerCrustSurfaceReconstruction : public vtkDataSetToPolyDataFilter
 {
 public:
-  vtkTypeMacro(vtkPowerCrustSurfaceReconstruction, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
-
   static vtkPowerCrustSurfaceReconstruction *New();
+  vtkTypeRevisionMacro(vtkPowerCrustSurfaceReconstruction,vtkDataSetToPolyDataFilter);
+  void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Returns the medial surface of the reconstructed surface.
@@ -85,15 +84,8 @@ public:
   void Error(const char *message);
 
 
-  double GetEstimate_r () //EPRO added
-  {
-    return m_estimate_r;
-  }
-
-  void SetEstimate_r(double val) //EPRO added
-  {
-    m_estimate_r = val;
-  }
+  double GetEstimate_r (){return m_estimate_r;}	//EPRO added
+  void SetEstimate_r(double val) {m_estimate_r = val;}	//EPRO added
 
 protected:
   vtkPowerCrustSurfaceReconstruction();
@@ -101,7 +93,7 @@ protected:
 
   // Description:
   // the main function that does the work
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  void Execute();
 
   void ComputeInputUpdateExtents(vtkDataObject *output);
   void ExecuteInformation();

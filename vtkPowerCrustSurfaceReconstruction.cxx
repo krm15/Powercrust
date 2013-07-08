@@ -17,22 +17,14 @@
 =========================================================================*/
 
 #include "vtkPowerCrustSurfaceReconstruction.h"
-#include "vtkFloatArray.h"
 #include "vtkObjectFactory.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
-#include "vtkInformationVector.h"
-#include "vtkInformation.h"
-#include "vtkDataObject.h"
-#include "vtkSmartPointer.h"
+#include "vtkFloatArray.h"
 
-
+vtkCxxRevisionMacro(vtkPowerCrustSurfaceReconstruction, "$Revision: 1.4 $");
 vtkStandardNewMacro(vtkPowerCrustSurfaceReconstruction);
 
 vtkPowerCrustSurfaceReconstruction::vtkPowerCrustSurfaceReconstruction()
 {
-    this->SetNumberOfInputPorts(1);
-    this->SetNumberOfOutputPorts(1);
-
     this->medial_surface = vtkPolyData::New();
     m_estimate_r = 0.6;	// EPRO-added to change the default value
 }
@@ -11556,55 +11548,20 @@ srand48(long seed)
 }
 //=====================================================================
 
-void vtkPowerCrustSurfaceReconstruction::PrintSelf(ostream& os, vtkIndent indent)
+void vtkPowerCrustSurfaceReconstruction::Execute()
 {
-  this->Superclass::PrintSelf(os,indent);
-
-}
-
-void vtkPowerCrustSurfaceReconstruction::ComputeInputUpdateExtents(vtkDataObject *output)
-{
-        std::cout << "ComputeInputUpdateExtents" << std::endl;
-  int piece, numPieces, ghostLevels;
-
-  if (this->GetInput() == NULL)
-    {
-    vtkErrorMacro("No Input");
-    return;
-    }
-  piece = this->GetUpdatePiece();
-  numPieces = this->GetUpdateNumberOfPieces();
-  ghostLevels = this->GetUpdateGhostLevel();
-
-  std::cout << piece << ' ' << numPieces << ' ' << ghostLevels << std::endl;
-
-  if (numPieces > 1)
-    {
-    ++ghostLevels;
-    }
-
-  this->SetUpdateExtent(piece, numPieces, ghostLevels);
-}
-
-int vtkPowerCrustSurfaceReconstruction::RequestData(vtkInformation *vtkNotUsed(request),
-                                             vtkInformationVector **inputVector,
-                                             vtkInformationVector *outputVector)
-{
-  // get the info objects
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-
-
-  // get the input and ouptut
-  vtkPolyData *input = vtkPolyData::SafeDownCast(
-      inInfo->Get(vtkDataObject::DATA_OBJECT()));
-
-  vtkPolyData *output = vtkPolyData::SafeDownCast(
-      outInfo->Get(vtkDataObject::DATA_OBJECT()));
-
-
+  vtkDataSet *input= this->GetInput();
   vtkIdType numPts=input->GetNumberOfPoints();
 
+  vtkPolyData *output = this->GetOutput();
+
+  // ghost cell stuff
+  unsigned char  updateLevel = (unsigned char)(output->GetUpdateGhostLevel());
+  unsigned char  *cellGhostLevels = NULL;
+
+
+  // make sure output is initialized
+  // create some points for the output
   {
   vtkPoints *points = vtkPoints::New();
   output->SetPoints(points);
@@ -11644,11 +11601,39 @@ int vtkPowerCrustSurfaceReconstruction::RequestData(vtkInformation *vtkNotUsed(r
   // this function is in hullmain.c
   adapted_main();
 
+
   this->medial_surface->Modified();
 
-  return 1;
 }
 
+void vtkPowerCrustSurfaceReconstruction::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+
+}
+
+void vtkPowerCrustSurfaceReconstruction::ComputeInputUpdateExtents(vtkDataObject *output)
+{
+  int piece, numPieces, ghostLevels;
+
+  if (this->GetInput() == NULL)
+    {
+    vtkErrorMacro("No Input");
+    return;
+    }
+  piece = output->GetUpdatePiece();
+  numPieces = output->GetUpdateNumberOfPieces();
+  ghostLevels = output->GetUpdateGhostLevel();
+
+  if (numPieces > 1)
+    {
+    ++ghostLevels;
+    }
+
+  this->GetInput()->SetUpdateExtent(piece, numPieces, ghostLevels);
+
+  this->GetInput()->RequestExactExtentOn();
+}
 
 void vtkPowerCrustSurfaceReconstruction::ExecuteInformation()
 {
