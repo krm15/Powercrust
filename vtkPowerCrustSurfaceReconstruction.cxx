@@ -11562,29 +11562,27 @@ void vtkPowerCrustSurfaceReconstruction::PrintSelf(ostream& os, vtkIndent indent
 
 }
 
-void vtkPowerCrustSurfaceReconstruction::ComputeInputUpdateExtents(vtkDataObject *output)
+int vtkPowerCrustSurfaceReconstruction::RequestUpdateExtent(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-        std::cout << "ComputeInputUpdateExtents" << std::endl;
-  int piece, numPieces, ghostLevels;
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  if (this->GetInput() == NULL)
-    {
-    vtkErrorMacro("No Input");
-    return;
-    }
-  piece = this->GetUpdatePiece();
-  numPieces = this->GetUpdateNumberOfPieces();
-  ghostLevels = this->GetUpdateGhostLevel();
 
-  std::cout << piece << ' ' << numPieces << ' ' << ghostLevels << std::endl;
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(),
+              outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES()));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(),
+              outInfo->Get(
+                vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER()));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
+              outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS()));
 
-  if (numPieces > 1)
-    {
-    ++ghostLevels;
-    }
-
-  this->SetUpdateExtent(piece, numPieces, ghostLevels);
+  return 1;
 }
+
 
 int vtkPowerCrustSurfaceReconstruction::RequestData(vtkInformation *vtkNotUsed(request),
                                              vtkInformationVector **inputVector,
