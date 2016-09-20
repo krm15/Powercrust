@@ -880,7 +880,7 @@ int correct_orientation(double*,double*,double*,double*,double*);
 
 /* TJH: old attempts at solving compilation problem (don't work on other OS's)
 int random() { return rand(); }
-void srandom(int s) { srand(s); }
+void srandom(int s) { srand(s); }*/
 
 /* TJH: these were put here to allow compiling under windows, getting problems on other OS's now
 #define popen _popen
@@ -5350,7 +5350,7 @@ void *visit_hull(simplex *root, visit_func *visit)
         if(DFILE)
             fprintf(DFILE,"---------------------\n");
         print_triang(a,DFILE, &print_neighbor_full);
-        /* TJH exit(1);*/ /*ASSERT(pcFALSE,"adjacency failure!");
+        // TJH exit(1); // ASSERT(pcFALSE,"adjacency failure!");
         return 0;
     }
 }*/
