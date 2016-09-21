@@ -103,7 +103,9 @@ protected:
   // the main function that does the work
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
-  void ComputeInputUpdateExtents(vtkDataObject *output);
+  int RequestUpdateExtent(vtkInformation*,
+                          vtkInformationVector**,
+                          vtkInformationVector*);
   void ExecuteInformation();
 
   vtkPolyData *medial_surface;

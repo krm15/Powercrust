@@ -757,7 +757,7 @@ void buildhull(simplex *);
 
 /* from io.c */
 
-void panic(char *fmt, ...);
+void panic(const char *fmt, ...);
 
 typedef void print_neighbor_f(FILE*, neighbor*);
 extern print_neighbor_f
@@ -880,7 +880,7 @@ int correct_orientation(double*,double*,double*,double*,double*);
 
 /* TJH: old attempts at solving compilation problem (don't work on other OS's)
 int random() { return rand(); }
-void srandom(int s) { srand(s); }
+void srandom(int s) { srand(s); }*/
 
 /* TJH: these were put here to allow compiling under windows, getting problems on other OS's now
 #define popen _popen
@@ -1346,7 +1346,7 @@ void echo_command_line(FILE *F, int argc, char **argv) {
     fprintf(F,"\n");
 }
 
-char *output_forms[] = {"vn", "ps", "mp", "cpr", "off"};
+const char *output_forms[] = {"vn", "ps", "mp", "cpr", "off"};
 
 out_func *out_funcs[] = {&vlist_out, &ps_out, &mp_out, &cpr_out, &off_out};
 
@@ -5350,7 +5350,7 @@ void *visit_hull(simplex *root, visit_func *visit)
         if(DFILE)
             fprintf(DFILE,"---------------------\n");
         print_triang(a,DFILE, &print_neighbor_full);
-        /* TJH exit(1);*/ /*ASSERT(pcFALSE,"adjacency failure!");
+        // TJH exit(1); // ASSERT(pcFALSE,"adjacency failure!");
         return 0;
     }
 }*/
@@ -5600,7 +5600,7 @@ Coord mins[MAXDIM]
     maxs[MAXDIM]
     = {-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX};
 
-void panic(char *fmt, ...) {
+void panic(const char *fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
@@ -11562,29 +11562,27 @@ void vtkPowerCrustSurfaceReconstruction::PrintSelf(ostream& os, vtkIndent indent
 
 }
 
-void vtkPowerCrustSurfaceReconstruction::ComputeInputUpdateExtents(vtkDataObject *output)
+int vtkPowerCrustSurfaceReconstruction::RequestUpdateExtent(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-        std::cout << "ComputeInputUpdateExtents" << std::endl;
-  int piece, numPieces, ghostLevels;
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  if (this->GetInput() == NULL)
-    {
-    vtkErrorMacro("No Input");
-    return;
-    }
-  piece = this->GetUpdatePiece();
-  numPieces = this->GetUpdateNumberOfPieces();
-  ghostLevels = this->GetUpdateGhostLevel();
 
-  std::cout << piece << ' ' << numPieces << ' ' << ghostLevels << std::endl;
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(),
+              outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES()));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(),
+              outInfo->Get(
+                vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER()));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
+              outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS()));
 
-  if (numPieces > 1)
-    {
-    ++ghostLevels;
-    }
-
-  this->SetUpdateExtent(piece, numPieces, ghostLevels);
+  return 1;
 }
+
 
 int vtkPowerCrustSurfaceReconstruction::RequestData(vtkInformation *vtkNotUsed(request),
                                              vtkInformationVector **inputVector,
